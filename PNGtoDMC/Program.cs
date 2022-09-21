@@ -23,19 +23,19 @@ namespace PNGtoDMC {
 		}
 
 		static string SymbolsRaw = "1	2	3	4	5	6	7	8	9	#	$	%"
-				+ "A C   D E   G H   J K   M N   O"
-				+ "P   R T   U W   X Y   Z	@	¢	£	¤	¥"
-				+ "Œ Ǣ   Ǯ Ǳ   Ψ Ω   Љ Њ   Ћ Ў"
-				+ "Б Д   Ж Й   П Ф   Ц Ш   Ы Ю"
-				+ "Ѩ Ѭ   Ѯ Ѹ   Ѿ	۞	߷	आ इ   ᚡ	⍟"
+				+ "A C	D E	G H	J K	M N	O"
+				+ "P	R T	U W	X Y	Z	@	¢	£	¤	¥"
+				+ "Œ Ǣ	Ǯ Ǳ	Ψ Ω	Љ Њ	Ћ Ў"
+				+ "Б Д	Ж Й	П Ф	Ц Ш	Ы Ю"
+				+ "Ѩ Ѭ	Ѯ Ѹ	Ѿ	۞	आ इ	ᚡ	⍟"
 				+ "⏸	⏹	⏺	⓭	⓮	⓯	⓱	⓲	⓴	▲	╋	╬	▞"
 				+ "☀	☂	☃	☆	☎	☢	☣	☤	☥	☭	☮	☯"
 				+ "☸	☿	♂	♃	♄	♅	♊	♋	♌	♍	♐	♑	♒"
-				+ "♞	♟	♠	♣	♥	♦	♫	⚤	⚧	⚽"
+				+ "♞	♟	♠	♣	♦	♫	⚤	⚧	⚽"
 				+ "✂	✈	⧱	⨌	⳦	⳧"
 				+ "㉚	㉛	㉜	㉟	㊲	㊳	㊵	㊷	㊹"
-				+ "㋎	㋏	㊍	㊎	⁂	ꖵ ꖸ   ꖺ ꖻ"
-				+ "ꔛ ꔞ   ꕥ";
+				+ "㋎	㋏	㊍	㊎	⁂"
+				+ "❤✊✌☕❀";
 		static char[] Symbols;
 
 		static async Task<int> Main(string[] args) {
@@ -44,10 +44,13 @@ namespace PNGtoDMC {
 			Symbols = SymbolsRaw.ToCharArray();
 			DMCColor[] colors = JsonConvert.DeserializeObject<DMCColor[]>(File.ReadAllText("colors.json", Encoding.UTF8));
 
-			PrivateFontCollection fontCollection = new PrivateFontCollection();
-			//fontCollection.AddFontFile("Arial");
-			Font basicFnt = new Font("Arial", 17F, FontStyle.Regular, GraphicsUnit.Pixel, 204);
-			Font smallFnt = new Font("Arial", 12F, FontStyle.Regular, GraphicsUnit.Pixel, 204);
+			//PrivateFontCollection fontCollection = new PrivateFontCollection();
+			//fontCollection.AddFontFile("NotoSans.ttf");
+			Font boldFnt = new Font("Arial", 18F, FontStyle.Bold, GraphicsUnit.Pixel, 204);
+			Font basicFnt = new Font("Arial", 18F, FontStyle.Regular, GraphicsUnit.Pixel, 204);
+			Font smallFnt = new Font("Arial", 14F, FontStyle.Regular, GraphicsUnit.Pixel, 204);
+			//Font basicFnt = new Font(fontCollection.Families[0], 17F, FontStyle.Bold, GraphicsUnit.Pixel, 204);
+			//Font smallFnt = new Font(fontCollection.Families[0], 12F, FontStyle.Bold, GraphicsUnit.Pixel, 204);
 			Bitmap original = new Bitmap("sample.png");
 			Bitmap result = new Bitmap(original.Width * 30, original.Height * 30);
 			Graphics g = Graphics.FromImage(result);
@@ -123,9 +126,6 @@ namespace PNGtoDMC {
 						if (delta < 20) {
 							thisColor.Subst = closest;
 							manualBitmapHeightExtension++;
-							//closest.Number += thisColor.Number;
-							//thisColor.Symbol = closest.Symbol;
-							//thisColor.IsMinor = closest.IsMinor;
 						}
 					}
 				}
@@ -133,6 +133,16 @@ namespace PNGtoDMC {
 			})) {
 				return 1;
 			}
+
+			/*for (int j = 0; j < SymbolsRaw.Length; j++) {
+				int hh = (int)Math.Floor((double)j / 16);
+				g.DrawString(SymbolsRaw[j].ToString(), basicFnt, Brushes.Black, (j % 16) * 20 + 3, hh * 20 + 10);
+			}
+			g.Flush();
+			result.Save("alphabet_arial.png");
+
+			return 0;*/
+
 			Console.WriteLine("Rendering new image...");
 			if (!await Task<bool>.Run(() => {
 				for (int i = 0; i < original.Width; i++) {
@@ -140,7 +150,7 @@ namespace PNGtoDMC {
 						DMCColor dmcc = colorResult[i, j];
 						g.DrawRectangle(Pens.DarkGray, i * 30, j * 30, 30, 30);
 						g.FillRectangle(dmcc.Brush, i * 30 + 1, j * 30 + 1, 29, 29);
-						g.DrawString(dmcc.Symbol, dmcc.IsMinor ? smallFnt : basicFnt, Brushes.Black, i * 30 + 3, j * 30 + 5);
+						g.DrawString(dmcc.Symbol, dmcc.IsMinor ? smallFnt : basicFnt, Brushes.Black, i * 30 + 2, j * 30 + 5);
 					}
 				}
 				return true;
@@ -148,6 +158,8 @@ namespace PNGtoDMC {
 				return 1;
 			}
 			g.Flush();
+			float dpi = (float)(30 / 2.5 * 25.4);
+			result.SetResolution(dpi, dpi);
 			result.Save("result.png");
 
 			int resultCount = usedDMCcolors.Count + manualBitmapHeightExtension;
