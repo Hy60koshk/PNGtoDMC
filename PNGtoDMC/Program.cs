@@ -20,6 +20,7 @@ namespace PNGtoDMC {
 			public bool IsMinor = false;
 			public int Number = 0;
 			public DMCColor Subst = null;
+			public int Code = -1;
 		}
 
 		static string SymbolsRaw = "1	2	3	4	5	6	7	8	9	#	$	%"
@@ -46,7 +47,6 @@ namespace PNGtoDMC {
 
 			//PrivateFontCollection fontCollection = new PrivateFontCollection();
 			//fontCollection.AddFontFile("NotoSans.ttf");
-			Font boldFnt = new Font("Arial", 18F, FontStyle.Bold, GraphicsUnit.Pixel, 204);
 			Font basicFnt = new Font("Arial", 18F, FontStyle.Regular, GraphicsUnit.Pixel, 204);
 			Font smallFnt = new Font("Arial", 14F, FontStyle.Regular, GraphicsUnit.Pixel, 204);
 			//Font basicFnt = new Font(fontCollection.Families[0], 17F, FontStyle.Bold, GraphicsUnit.Pixel, 204);
@@ -70,6 +70,9 @@ namespace PNGtoDMC {
 					int max = Math.Max(Math.Max(dmcc.Color.R, dmcc.Color.G), dmcc.Color.B);
 					int d = 255 - max;
 					dmcc.Brush = new SolidBrush(Color.FromArgb(dmcc.Color.R + d, dmcc.Color.G + d, dmcc.Color.B + d));
+					if (int.TryParse(dmcc.code, out int intcode)) {
+						dmcc.Code = intcode;
+					}
 				}
 				for (int i = 0; i < original.Width; i++) {
 					for (int j = 0; j < original.Height; j++) {
@@ -102,6 +105,7 @@ namespace PNGtoDMC {
 					}
 				}
 				int ic = 0;
+				usedDMCcolors.Sort((a, b) => a.Code.CompareTo(b.Code));
 				for (; ic < usedDMCcolors.Count && ic < Symbols.Length; ic++) {
 					usedDMCcolors[ic].Symbol = Symbols[ic].ToString();
 				}
